@@ -17,11 +17,29 @@ import BlogIndex from "./Pages/BlogIndex";
 import BlogSingle from "./Pages/BlogSingle";
 import Contact from "./Pages/Contact";
 import { paths } from "./config/paths";
+import Login from "./Pages/Login";
+import Signup from "./Pages/Signup";
+import NonAuthorizedUserRoute from "./Layouts/NonAuthorizedUserRoute";
+import { AuthProvider } from "./context/AuthProvider";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route path="/" element={<IndexLayout />} errorElement={<ErrorPage />}>
-            <Route errorElement={<ErrorPage />}>
+        <Route
+            path="/"
+            element={<IndexLayout />}
+            errorElement={
+                <IndexLayout>
+                    <ErrorPage />
+                </IndexLayout>
+            }
+        >
+            <Route
+                errorElement={
+                    <IndexLayout>
+                        <ErrorPage />
+                    </IndexLayout>
+                }
+            >
                 <Route index element={<Index />} />
                 <Route
                     path={
@@ -56,6 +74,10 @@ const router = createBrowserRouter(
                     element={<BlogSingle />}
                 />
                 <Route path={paths.contact.url} element={<Contact />} />
+                <Route element={<NonAuthorizedUserRoute />}>
+                    <Route path={paths.login.url} element={<Login />} />
+                    <Route path={paths.signup.url} element={<Signup />} />
+                </Route>
             </Route>
         </Route>
     )
@@ -63,7 +85,7 @@ const router = createBrowserRouter(
 
 function App() {
     return (
-        <>
+        <AuthProvider>
             <RouterProvider router={router} />
             <style jsx global>
                 {`
@@ -129,7 +151,7 @@ function App() {
                     }
                 `}
             </style>
-        </>
+        </AuthProvider>
     );
 }
 

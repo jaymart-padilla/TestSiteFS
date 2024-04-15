@@ -1,9 +1,14 @@
-import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown, Container, Button } from "react-bootstrap";
 import { paths } from "../config/paths";
-import { socialLinks } from "../config/social-links";
+// import { socialLinks } from "../config/social-links";
 import { useMatch } from "react-router-dom";
+import { useAuthContext } from "../context/AuthProvider";
+import { logout } from "../utils/logout";
 
 export default function TopNav() {
+    const accessToken = sessionStorage.getItem("access_token");
+    const { authenticated } = useAuthContext();
+
     return (
         <Container>
             <Navbar collapseOnSelect expand="lg" className="top-navbar">
@@ -15,9 +20,17 @@ export default function TopNav() {
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav" className="gap-5">
-                    <NavLinks paths={paths} />
+                    <NavLinks
+                        // {paths}
+                        paths={Object.values(paths).filter(
+                            (path) =>
+                                path.url !== paths.login.url &&
+                                path.url !== paths.signup.url &&
+                                path.url !== paths.logout.url
+                        )}
+                    />
                     <div className="d-none d-lg-block mx-2">|</div>
-                    <Nav className="d-flex flex-row top-navbar-social-icons">
+                    {/* <Nav className="d-flex flex-row top-navbar-social-icons">
                         <Nav.Link href={socialLinks.twitter} target="_blank">
                             <i className="fa-brands fa-twitter" />
                         </Nav.Link>
@@ -30,6 +43,34 @@ export default function TopNav() {
                         <Nav.Link href={socialLinks.linkedIn} target="_blank">
                             <i className="fa-brands fa-linkedin" />
                         </Nav.Link>
+                    </Nav> */}
+                    <Nav className="d-flex flex-row" style={{ gap: "0.25rem" }}>
+                        {accessToken || authenticated ? (
+                            <Button
+                                className="action-button"
+                                variant="success"
+                                onClick={logout}
+                            >
+                                {paths.logout.text}
+                            </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    href={paths.login.url}
+                                    className="action-button"
+                                    variant="success"
+                                >
+                                    {paths.login.text}
+                                </Button>
+                                <Button
+                                    href={paths.signup.url}
+                                    className="action-button action-button-outline"
+                                    variant="outline-success"
+                                >
+                                    {paths.signup.text}
+                                </Button>
+                            </>
+                        )}
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
@@ -109,6 +150,25 @@ export default function TopNav() {
                         color: inherit;
                     }
 
+                    .action-button {
+                        font-weight: 500 !important;
+                        font-size: small !important;
+                        padding-left: 1.25rem !important;
+                        padding-right: 1.25rem !important;
+                    }
+
+                    .action-button-outline {
+                        border: none;
+                    }
+
+                    .action-button-outline {
+                        color: var(--accent-color) !important;
+                    }
+
+                    .action-button-outline:hover {
+                        color: white !important;
+                    }
+
                     @media (max-width: 992px) {
                         .top-navbar {
                             padding: 0.5rem 1rem;
@@ -128,7 +188,7 @@ export default function TopNav() {
     );
 }
 
-function NavLinks({ paths }) {
+function NavLinks({ paths = {} }) {
     return (
         <Nav className="ml-auto top-nav-container">
             {Object.values(paths).map((path, index) => {

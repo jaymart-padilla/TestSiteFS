@@ -6,7 +6,7 @@ export default function Contact() {
     return (
         <div className="flex-grow-1">
             <TopBreadcrumbs
-                links={[paths.contact, paths.contact]}
+                links={[paths.home, paths.contact]}
                 activeLink={paths.contact}
             />
             <iframe

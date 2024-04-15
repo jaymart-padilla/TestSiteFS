@@ -15,6 +15,12 @@ $config = [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'QZ-BS_dqSHX-g18hcNTcHYAuMkchejNU',
+            'enableCsrfValidation' => false,
+            'enableCsrfCookie' => false,
+            // enable JSON input parsing
+            'parsers' => [
+                'application/json' => 'yii\web\JsonParser',
+            ]
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -23,8 +29,12 @@ $config = [
             'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
         ],
+        // 'errorHandler' => [
+        //     'errorAction' => 'site/error',
+        // ],
+        // custom error handler
         'errorHandler' => [
-            'errorAction' => 'site/error',
+            'class' => app\components\JsonErrorHandler::class,
         ],
         'mailer' => [
             'class' => \yii\symfonymailer\Mailer::class,
@@ -42,14 +52,11 @@ $config = [
             ],
         ],
         'db' => $db,
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'rules' => [
-            ],
+            'rules' => [],
         ],
-        */
     ],
     'params' => $params,
 ];

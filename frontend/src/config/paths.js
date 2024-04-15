@@ -44,4 +44,16 @@ export const paths = {
         url: "/contact",
         text: "Contact",
     },
+    login: {
+        url: "/login",
+        text: "Login",
+    },
+    signup: {
+        url: "/signup",
+        text: "Sign up",
+    },
+    logout: {
+        url: "/logout",
+        text: "Logout",
+    },
 };

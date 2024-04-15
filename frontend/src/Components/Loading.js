@@ -1,14 +1,14 @@
-const img = "/images/card-grid/snow.svg";
+const img = "/images/loading.svg";
 
-export default function ErrorPage({ message = "404 Not Found" }) {
+export default function Loading() {
     return (
         <div className="flex-grow-1 d-flex justify-content-center align-items-center">
-            <h2 className="my-5 mr-4">{message}</h2>
+            <h2 className="my-5 mr-4">Loading...</h2>
             <img
                 className="d-block"
                 style={{ marginTop: "-0.75rem" }}
                 src={img}
-                alt={message}
+                alt="Loading..."
                 height={74}
             />
         </div>

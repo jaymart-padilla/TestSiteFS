@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@inertiajs/react": "^1.0.15",
+    "axios": "^1.6.8",
     "bootstrap": "^4.6.0",
     "markdown-to-jsx": "^7.4.1",
     "react": "^18.2.0",
