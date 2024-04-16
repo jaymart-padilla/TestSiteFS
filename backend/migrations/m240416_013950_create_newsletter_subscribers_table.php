@@ -3,27 +3,25 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%blog}}`.
+ * Handles the creation of table `{{%newsletter_subscribers}}`.
  */
-class m240412_062944_create_blog_table extends Migration
+class m240416_013950_create_newsletter_subscribers_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%blog}}', [
+        $this->createTable('{{%newsletter_subscribers}}', [
             'id' => $this->primaryKey(),
             'user_id' => $this->integer()->notNull(),
-            'title' => $this->string()->notNull(),
-            'content' => $this->text()->notNull(),
             'created_at' => $this->integer()->notNull(),
             'updated_at' => $this->integer()->notNull(),
         ]);
 
         $this->addForeignKey(
-            'fk-blog-user_id',
-            '{{%blog}}',
+            'fk-newsletter_subscribers-user_id',
+            '{{%newsletter_subscribers}}',
             'user_id',
             '{{%user}}',
             'id',
@@ -35,7 +33,7 @@ class m240412_062944_create_blog_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropForeignKey('fk-blog-user_id', '{{%blog}}');
-        $this->dropTable('{{%blog}}');
+        $this->dropForeignKey('fk-newsletter_subscribers-user_id', '{{%newsletter_subscribers}}');
+        $this->dropTable('{{%newsletter_subscribers}}');
     }
 }

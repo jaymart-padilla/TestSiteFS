@@ -23,7 +23,7 @@ class m240403_082902_create_user_table extends Migration
             'username' => $this->string()->notNull()->unique(),
             'email' => $this->string()->notNull()->unique(),
             'password' => $this->string()->notNull(),
-            'privilege' => $this->string()->notNull()->defaultValue('user'), // 0 = 'user', 1 = 'admin
+            'privilege' => $this->string()->notNull()->defaultValue('user'),
             'auth_key' => $this->string()->notNull(),
             'access_token' => $this->string()->notNull(),
             'created_at' => $this->integer()->notNull(),
