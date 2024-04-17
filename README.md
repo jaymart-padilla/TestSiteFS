@@ -2,7 +2,7 @@
 
 ## Setup ⚙️
 
-### 1. Start up both servers:
+### 1. Start up servers:
 
 #### Frontend:
 
