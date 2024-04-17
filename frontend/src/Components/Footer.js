@@ -3,13 +3,17 @@ import {
     Col,
     Container,
     Form,
-    FormControl,
     InputGroup,
     Nav,
     Row,
 } from "react-bootstrap";
 import { socialLinks as socialUrl } from "../config/social-links";
 import { paths } from "../config/paths";
+import { parseErrorMessage } from "../utils/errorParser";
+import axios from "axios";
+import { useState } from "react";
+import { useAuthContext } from "../context/AuthProvider";
+import ToastNotif from "./ToastNotif";
 
 const footerLinks = {
     usefulLinks: [
@@ -125,29 +129,7 @@ export default function Footer() {
                         </Nav>
                     </Col>
                     <Col md={5} className="mb-3 mt-md-0 mt-3">
-                        <Form
-                            className="d-flex flex-column"
-                            style={{ gap: "0.285rem" }}
-                        >
-                            <h6>Join Our Newsletter</h6>
-                            <p className="text-white-50">
-                                Lorem ipsum dolor sit, amet consectetur
-                                adipisicing elit. Voluptates ea facere et esse
-                                aliquid.
-                            </p>
-                            <InputGroup>
-                                <FormControl />
-                                <div className="input-group-append">
-                                    <Button
-                                        variant="success"
-                                        className="px-3"
-                                        style={{ fontWeight: 500 }}
-                                    >
-                                        Subscribe
-                                    </Button>
-                                </div>
-                            </InputGroup>
-                        </Form>
+                        <NewsLetter />
                     </Col>
                 </Row>
             </Container>
@@ -199,5 +181,83 @@ export default function Footer() {
                 `}
             </style>
         </footer>
+    );
+}
+
+function NewsLetter() {
+    const { user } = useAuthContext();
+
+    const [error, setError] = useState();
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState();
+
+    const submit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(
+                "/api/contact/contact-form-submit",
+                {
+                    email: user?.email,
+                }
+            );
+
+            setError();
+
+            setToastMessage(response.data?.message);
+
+            setShowToast(true);
+        } catch (error) {
+            if (error.response && error.response.data) {
+                const responseData = error.response.data;
+                const errorMessage = parseErrorMessage(responseData);
+                setError(errorMessage);
+            } else {
+                setError("Network error or unexpected issue");
+            }
+        }
+    };
+
+    return (
+        <Form
+            className="d-flex flex-column"
+            style={{ gap: "0.285rem" }}
+            onSubmit={submit}
+        >
+            <h6>Join Our Newsletter</h6>
+            <p className="text-white-50">
+                Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+                Voluptates ea facere et esse aliquid.
+            </p>
+            <InputGroup>
+                <Form.Control
+                    type="email"
+                    placeholder="Login first to subscribe"
+                    required
+                    value={user?.email || ""}
+                    disabled
+                    style={{ fontSize: "small" }}
+                />
+                <div className="input-group-append">
+                    <Button
+                        type="submit"
+                        variant="success"
+                        className="px-3"
+                        style={{ fontWeight: 500, fontSize: "small" }}
+                    >
+                        Subscribe
+                    </Button>
+                </div>
+            </InputGroup>
+            {error && (
+                <small className="d-block text-center pt-3 text-danger">
+                    {error}
+                </small>
+            )}
+            <ToastNotif
+                show={showToast}
+                message={toastMessage}
+                setShow={setShowToast}
+            />
+        </Form>
     );
 }

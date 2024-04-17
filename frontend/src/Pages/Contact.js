@@ -11,7 +11,7 @@ export default function Contact() {
             />
             <iframe
                 loading="lazy"
-                src="https://maps.google.com/maps?q=chennai&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=Alaminos%20Pangasinan&t=&z=13&ie=UTF8&iwloc=&output=embed"
                 className="google-maps-iframe"
             />
             <ContactFormIndex />

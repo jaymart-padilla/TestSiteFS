@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "{{%newsletter_subscribers}}".
@@ -22,6 +23,16 @@ class NewsletterSubscribers extends \yii\db\ActiveRecord
     public static function tableName()
     {
         return '{{%newsletter_subscribers}}';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+        ];
     }
 
     /**

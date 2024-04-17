@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "{{%contact_form_submissions}}".
@@ -28,10 +29,21 @@ class ContactFormSubmissions extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function rules()
     {
         return [
-            [['name', 'email', 'subject', 'message', 'created_at', 'updated_at'], 'required'],
+            [['email'], 'email'],
+            [['name', 'email', 'subject', 'message'], 'required'],
             [['message'], 'string'],
             [['created_at', 'updated_at'], 'integer'],
             [['name', 'email', 'subject'], 'string', 'max' => 255],
