@@ -21,7 +21,7 @@ export default function ToastNotif({ show, setShow, message }) {
                             <span className="accent-color">Test</span>Site
                         </strong>
                     </Toast.Header>
-                    <Toast.Body>
+                    <Toast.Body style={{ color: "black" }}>
                         {message || "Default toast message"}
                     </Toast.Body>
                 </Toast>

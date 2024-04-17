@@ -13,7 +13,6 @@ import { parseErrorMessage } from "../utils/errorParser";
 import axios from "axios";
 import { useState } from "react";
 import { useAuthContext } from "../context/AuthProvider";
-import ToastNotif from "./ToastNotif";
 
 const footerLinks = {
     usefulLinks: [
@@ -185,27 +184,26 @@ export default function Footer() {
 }
 
 function NewsLetter() {
-    const { user } = useAuthContext();
+    const { user, hasNewsletterSubscription } = useAuthContext();
 
     const [error, setError] = useState();
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState();
 
     const submit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(
-                "/api/contact/contact-form-submit",
-                {
-                    email: user?.email,
-                }
-            );
+            const apiRoute = hasNewsletterSubscription
+                ? "unsubscribe"
+                : "subscribe";
+            const response = await axios.post(`/api/newsletter/${apiRoute}`, {
+                email: user?.email,
+                accessToken: sessionStorage.getItem("access_token"),
+            });
 
             setError();
 
-            setToastMessage(response.data?.message);
+            console.log(response.data?.message);
 
-            setShowToast(true);
+            window.location.reload();
         } catch (error) {
             if (error.response && error.response.data) {
                 const responseData = error.response.data;
@@ -231,7 +229,7 @@ function NewsLetter() {
             <InputGroup>
                 <Form.Control
                     type="email"
-                    placeholder="Login first to subscribe"
+                    placeholder="Please login first to subscribe"
                     required
                     value={user?.email || ""}
                     disabled
@@ -240,11 +238,17 @@ function NewsLetter() {
                 <div className="input-group-append">
                     <Button
                         type="submit"
-                        variant="success"
+                        variant={`${
+                            hasNewsletterSubscription
+                                ? "outline-success"
+                                : "success"
+                        }`}
                         className="px-3"
                         style={{ fontWeight: 500, fontSize: "small" }}
                     >
-                        Subscribe
+                        {hasNewsletterSubscription
+                            ? "Unsubscribe"
+                            : "Subscribe"}
                     </Button>
                 </div>
             </InputGroup>
@@ -253,11 +257,6 @@ function NewsLetter() {
                     {error}
                 </small>
             )}
-            <ToastNotif
-                show={showToast}
-                message={toastMessage}
-                setShow={setShowToast}
-            />
         </Form>
     );
 }

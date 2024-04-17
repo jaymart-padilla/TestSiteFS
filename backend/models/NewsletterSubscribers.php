@@ -41,9 +41,10 @@ class NewsletterSubscribers extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'created_at', 'updated_at'], 'required'],
+            [['user_id'], 'required'],
             [['user_id', 'created_at', 'updated_at'], 'integer'],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
+            [['user_id'], 'unique'],
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\NewsletterSubscribers;
 use app\models\User;
 use Yii;
 use yii\web\BadRequestHttpException;
@@ -82,7 +83,13 @@ class AuthController extends Controller
         // Compare the access token from sessionStorage with the current user's access token
         if ($sessionStorageToken === $currentUser->access_token) {
             // Access tokens match, user is authenticated
-            return $this->asJson(['authenticated' => true, 'user' => $currentUser]);
+
+            // Check if the user is subscribed to the newsletter
+            $hasNewsletterSubscription = NewsletterSubscribers::find()
+                ->where(['user_id' => $currentUser->id])
+                ->exists();
+
+            return $this->asJson(['authenticated' => true, 'user' => $currentUser, 'hasNewsletterSubscription' => $hasNewsletterSubscription]);
         } else {
             // Access tokens don't match, user is not authenticated
             return $this->asJson(['authenticated' => false]);
