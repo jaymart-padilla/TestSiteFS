@@ -1,12 +1,19 @@
 import { Button, Form, FormControl, InputGroup } from "react-bootstrap";
+import { useAuthContext } from "../context/AuthProvider";
 import { formatDate } from "../utils/formateDate";
 import { paths } from "../config/paths";
 import { blogCategories, blogData, blogTags } from "../config/dummy-data";
+import { useForm } from "@inertiajs/react";
 
-export default function BlogSidebar() {
+export default function BlogSidebar({ user }) {
+    const { data, setData } = useForm({
+        search: "",
+    });
+
     return (
         <section className="py-3 px-4 mt-4 mt-lg-0 blog-sidebar shadow border">
-            <SearchSection />
+            <SearchSection setData={setData} />
+            <BlogCreateSection user={user} />
             <CategoriesSection />
             <RecentPostSection />
             <TagSection />
@@ -69,7 +76,7 @@ export default function BlogSidebar() {
     );
 }
 
-function SearchSection() {
+function SearchSection({ setData }) {
     return (
         <Form>
             <div className="blog-sidebar-section-title">Search</div>
@@ -78,6 +85,7 @@ function SearchSection() {
                     className="border-right-0 blog-sidebar-search-input"
                     aria-label="Search"
                     aria-describedby="basic-addon2"
+                    onChange={(e) => setData("username", e.target.value)}
                 />
                 <Button
                     variant="success"
@@ -87,6 +95,21 @@ function SearchSection() {
                 </Button>
             </InputGroup>
         </Form>
+    );
+}
+
+function BlogCreateSection({ user }) {
+    if (!user || user?.privilege !== "admin") return null;
+
+    return (
+        <Button
+            href={paths.blog.url + "/create"}
+            variant="success"
+            className="accent-button px-3"
+        >
+            <i className="fa-solid fa-plus mr-2" />
+            Create a new blog
+        </Button>
     );
 }
 

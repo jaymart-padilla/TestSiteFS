@@ -1,20 +1,29 @@
-import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import BlogMarkdownLayout from "../Layouts/BlogMarkdownLayout";
 import BlogSidebar from "./BlogSidebar";
 import BlogComment from "./BlogComment";
 import { formatDate } from "../utils/formateDate";
 import { blogComment } from "../config/dummy-data";
+import Loading from "./Loading";
+import ErrorPage from "../Pages/ErrorPage";
 
-export default function BlogItem({ blog }) {
+export default function BlogItem({ blog, loading }) {
     return (
         <Container className="py-3 py-lg-5 blog-container">
             <Row>
                 <Col xs={{ span: 12 }} lg={{ span: 8 }}>
-                    <BlogCard {...blog} />
-                    <ProfileCard />
-                    <BlogComments />
-                    <BlogLeaveReplyForm />
+                    {loading ? (
+                        <Loading />
+                    ) : !blog ? (
+                        <ErrorPage message="404 Not Found" />
+                    ) : (
+                        <>
+                            <BlogCard {...blog} />
+                            <ProfileCard />
+                            <BlogComments />
+                            <BlogLeaveReplyForm />
+                        </>
+                    )}
                 </Col>
                 <Col xs={{ span: 12 }} lg={{ span: 4 }}>
                     <BlogSidebar />
@@ -99,27 +108,24 @@ export default function BlogItem({ blog }) {
     );
 }
 
-function BlogCard({ title, author, date, comments, img, content, tags }) {
-    const formattedDate = formatDate(date);
-
-    const [blogContent, setBlogContent] = useState("");
-
-    useEffect(() => {
-        import(/* @vite-ignore */ content)
-            .then((res) => {
-                fetch(res.default)
-                    .then((res) => res.text())
-                    .then((res) => setBlogContent(res))
-                    .catch((err) => console.log(err));
-            })
-            .catch((err) => console.log(err));
-    });
+function BlogCard({
+    title,
+    author,
+    created_at,
+    updated_at,
+    comments,
+    thumbnail,
+    content,
+    tags = [],
+}) {
+    const dateCreated = formatDate(created_at);
+    const dateUpdated = formatDate(updated_at);
 
     return (
         <Card className="blog-item-card">
             <Card.Img
                 variant="top"
-                src={img}
+                src={`/api/${thumbnail}`}
                 alt={`${author}'s Blog: ${title}`}
                 className="normalized-image blog-item-card-image"
             />
@@ -130,27 +136,31 @@ function BlogCard({ title, author, date, comments, img, content, tags }) {
                 <Card.Text className="blog-item-card-metadata">
                     <small>
                         <i className="fa-regular fa-user mr-2" />
-                        {author}
+                        {author || "Anonymous"}
                     </small>
                     <small>
                         <i className="fa-regular fa-clock mr-2" />
-                        {formattedDate}
+                        {dateCreated && dateUpdated
+                            ? `${dateCreated} — ${dateUpdated}`
+                            : "Unknown"}
                     </small>
                     <small>
                         <i className="fa-regular fa-comment-dots mr-2" />
-                        {comments} comments
+                        {comments || 0} comments
                     </small>
                 </Card.Text>
                 <BlogMarkdownLayout className="blog-item-card-content">
-                    {blogContent}
+                    {content}
                 </BlogMarkdownLayout>
 
-                <Card.Text className="border-top pt-2 blog-item-card-metadata">
-                    <small>
-                        <i className="fa-solid fa-tags mr-2" />
-                        {tags.map((tag) => tag).join(", ")}
-                    </small>
-                </Card.Text>
+                {tags && tags.length > 0 && (
+                    <Card.Text className="border-top pt-2 blog-item-card-metadata">
+                        <small>
+                            <i className="fa-solid fa-tags mr-2" />
+                            {tags.map((tag) => tag).join(", ")}
+                        </small>
+                    </Card.Text>
+                )}
             </Card.Body>
         </Card>
     );

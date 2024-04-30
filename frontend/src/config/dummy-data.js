@@ -344,7 +344,7 @@ export const blogData = [
         comments: 12,
         img: "/images/blog/img-2.jpg",
         content: "../assets/markdown/blog-1.md",
-        tags: [blogTags[0], blogTags[1], blogTags[2]],
+        // tags: [blogTags[0], blogTags[1], blogTags[2]],
     },
     {
         id: 2,
@@ -354,7 +354,7 @@ export const blogData = [
         comments: 12,
         img: "/images/blog/img-1.jpg",
         content: "../assets/markdown/blog-2.md",
-        tags: [blogTags[3], blogTags[4], blogTags[5]],
+        // tags: [blogTags[3], blogTags[4], blogTags[5]],
     },
     {
         id: 3,
@@ -364,7 +364,7 @@ export const blogData = [
         comments: 12,
         img: "/images/blog/img-3.jpg",
         content: "../assets/markdown/blog-3.md",
-        tags: [blogTags[6], blogTags[7], blogTags[8]],
+        // tags: [blogTags[6], blogTags[7], blogTags[8]],
     },
     {
         id: 4,
@@ -374,7 +374,7 @@ export const blogData = [
         comments: 12,
         img: "/images/blog/img-4.jpg",
         content: "../assets/markdown/blog-4.md",
-        tags: [blogTags[9], blogTags[10]],
+        // tags: [blogTags[9], blogTags[10]],
     },
 ];
 

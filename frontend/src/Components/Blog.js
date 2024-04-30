@@ -1,23 +1,93 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Pagination, Row } from "react-bootstrap";
+import axios from "axios";
+import {
+    Button,
+    Card,
+    Col,
+    Container,
+    Modal,
+    Pagination,
+    Row,
+} from "react-bootstrap";
+import { useAuthContext } from "../context/AuthProvider";
 import BlogSidebar from "./BlogSidebar";
 import BlogMarkdownLayout from "../Layouts/BlogMarkdownLayout";
+import Loading from "./Loading";
 import { formatDate } from "../utils/formateDate";
+import { parseErrorMessage } from "../utils/errorParser";
 import { paths } from "../config/paths";
-import { blogData } from "../config/dummy-data";
 
 export default function Blog() {
+    const { user } = useAuthContext();
+    const [blogs, setBlogs] = useState([]);
+    const [pagination, setPagination] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const response = await axios.get(`/api${paths.blog.url}`);
+
+                setBlogs(response.data?.blogs);
+                setPagination(response.data?.pagination);
+                setLoading(false);
+            } catch (error) {
+                console.error(error);
+                setLoading(false);
+            }
+        };
+        fetchBlogs();
+    }, []);
+
+    async function handlePageChange(page) {
+        try {
+            setLoading(true);
+            const response = await axios.get(`/api${paths.blog.url}`, {
+                params: { page },
+            });
+
+            setBlogs(response.data?.blogs);
+            setPagination(response.data?.pagination);
+            setLoading(false);
+
+            // scroll to top of the page
+            window.scrollTo(0, 0);
+        } catch (error) {
+            console.error(error);
+            setLoading(false);
+        }
+    }
+
+    // if (loading) return <Loading />;
+
     return (
         <Container className="py-3 py-md-5 blog-container">
             <Row>
                 <Col xs={{ span: 12 }} lg={{ span: 8 }}>
-                    {blogData.map((blog, index) => (
-                        <BlogCard {...blog} key={blog.id || index} />
-                    ))}
-                    <BlogPagination />
+                    {loading ? (
+                        <Loading />
+                    ) : (
+                        <>
+                            {blogs && blogs.length > 0 ? (
+                                blogs.map((blog, index) => (
+                                    <BlogCard
+                                        user={user}
+                                        {...blog}
+                                        key={blog.id || index}
+                                    />
+                                ))
+                            ) : (
+                                <p className="lead">No blogs found</p>
+                            )}
+                            <BlogPagination
+                                {...pagination}
+                                handlePageChange={handlePageChange}
+                            />
+                        </>
+                    )}
                 </Col>
                 <Col xs={{ span: 12 }} lg={{ span: 4 }}>
-                    <BlogSidebar />
+                    <BlogSidebar user={user} />
                 </Col>
             </Row>
             <style jsx global>{`
@@ -90,37 +160,61 @@ export default function Blog() {
     );
 }
 
-function BlogCard({ id, title, author, date, comments, img, content }) {
-    const formattedDate = formatDate(date);
+function BlogCard({
+    user,
+    id,
+    title,
+    author,
+    created_at,
+    updated_at,
+    comments,
+    thumbnail,
+    content,
+}) {
+    const [show, setShow] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const dateCreated = formatDate(created_at);
+    const dateUpdated = formatDate(updated_at);
 
     const blogContentPreviewMaxLength = 375;
 
     // truncate blog content for preview
+    const blogContent = content
+        ? content.substring(0, blogContentPreviewMaxLength) + "..."
+        : "";
 
-    const [blogContent, setBlogContent] = useState("");
+    async function handleDelete() {
+        try {
+            setLoading(true);
+            await axios.delete(`/api${paths.blog.url}/delete`, {
+                params: { id },
+            });
 
-    useEffect(() => {
-        import(/* @vite-ignore */ content)
-            .then((res) => {
-                fetch(res.default)
-                    .then((res) => res.text())
-                    .then((res) => {
-                        const truncatedContent = res.substring(
-                            0,
-                            blogContentPreviewMaxLength
-                        );
-                        setBlogContent(truncatedContent + "...");
-                    })
-                    .catch((err) => console.log(err));
-            })
-            .catch((err) => console.log(err));
-    });
+            setLoading(false);
+            setShow(false);
+
+            window.location.reload();
+        } catch (error) {
+            if (error.response && error.response.data) {
+                const responseData = error.response.data;
+                const errorMessage = parseErrorMessage(responseData);
+                setError(errorMessage);
+            } else {
+                setError("Network error or unexpected issue");
+            }
+
+            setLoading(false);
+            setShow(false);
+        }
+    }
 
     return (
         <Card className="blog-card shadow">
             <Card.Img
                 variant="top"
-                src={img}
+                src={`/api/${thumbnail}`}
                 alt={`${author}'s Blog: ${title}`}
                 className="normalized-image blog-card-image"
             />
@@ -129,15 +223,17 @@ function BlogCard({ id, title, author, date, comments, img, content }) {
                 <Card.Text className="blog-card-metadata">
                     <small>
                         <i className="fa-regular fa-user mr-2" />
-                        {author}
+                        {author || "Anonymous"}
                     </small>
                     <small>
                         <i className="fa-regular fa-clock mr-2" />
-                        {formattedDate}
+                        {dateCreated && dateUpdated
+                            ? `${dateCreated} — ${dateUpdated}`
+                            : "Unknown"}
                     </small>
                     <small>
                         <i className="fa-regular fa-comment-dots mr-2" />
-                        {comments} comments
+                        {comments || 0} comments
                     </small>
                 </Card.Text>
                 <BlogMarkdownLayout
@@ -165,29 +261,98 @@ function BlogCard({ id, title, author, date, comments, img, content }) {
                 >
                     {blogContent}
                 </BlogMarkdownLayout>
-                <Button
-                    href={`${paths.blog.url}/${id}`}
-                    variant="success"
-                    className="d-block ml-auto accent-button py-1 px-3 font-weight-normal blog-card-button"
-                >
-                    Read More
-                </Button>
+                <div className="d-flex justify-content-between">
+                    {user && user.privilege === "admin" && (
+                        <div>
+                            <Button
+                                variant="danger"
+                                className="accent-button mr-2 py-1 px-3 font-weight-normal blog-card-button"
+                                onClick={() => setShow(true)}
+                            >
+                                Delete
+                            </Button>
+
+                            <Modal show={show} onHide={() => setShow(false)}>
+                                <Modal.Header>
+                                    <Modal.Title>{title}</Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body>
+                                    Are you sure you want to delete this blog?
+                                </Modal.Body>
+                                <Modal.Footer>
+                                    <Button
+                                        variant="secondary"
+                                        className="accent-button"
+                                        onClick={() => setShow(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        className="accent-button"
+                                        disabled={loading}
+                                        onClick={handleDelete}
+                                    >
+                                        Confirm Delete
+                                    </Button>
+                                </Modal.Footer>
+                            </Modal>
+                            <Button
+                                href={`${paths.blog.url}/edit/${id}`}
+                                variant="warning"
+                                className="accent-button py-1 px-3 font-weight-normal blog-card-button"
+                            >
+                                Edit
+                            </Button>
+                        </div>
+                    )}
+                    <Button
+                        href={`${paths.blog.url}/${id}`}
+                        variant="success"
+                        className="d-block ml-auto accent-button py-1 px-3 font-weight-normal blog-card-button"
+                    >
+                        Read More
+                    </Button>
+                </div>
+                {error && (
+                    <small className="d-block text-center pt-3 text-danger">
+                        {error}
+                    </small>
+                )}
             </Card.Body>
         </Card>
     );
 }
 
-function BlogPagination() {
+function BlogPagination({
+    current_page: currentPage,
+    prev_page: prev,
+    next_page: next,
+    total_pages: total,
+    handlePageChange,
+}) {
     return (
         <Pagination className="blog-pagination">
-            <Pagination.Item key={1} activeLabel="">
-                1
+            <Pagination.Item
+                onClick={() => handlePageChange(prev)}
+                disabled={prev == null}
+                key={0}
+                activeLabel=""
+            >
+                Prev
             </Pagination.Item>
-            <Pagination.Item key={2} active={true} activeLabel="">
-                2
+
+            <Pagination.Item key={currentPage} active={true} activeLabel="">
+                {currentPage || 1}
             </Pagination.Item>
-            <Pagination.Item key={3} activeLabel="">
-                3
+
+            <Pagination.Item
+                onClick={() => handlePageChange(next)}
+                disabled={next == null}
+                key={total + 1}
+                activeLabel=""
+            >
+                Next
             </Pagination.Item>
         </Pagination>
     );

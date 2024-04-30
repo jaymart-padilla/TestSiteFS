@@ -40,36 +40,30 @@ class NewsletterSubscribers extends \yii\db\ActiveRecord
      */
     public function rules()
     {
+        // return [
+        //     [['user_id'], 'required'],
+        //     [['user_id', 'created_at', 'updated_at'], 'integer'],
+        //     [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
+        //     [['user_id'], 'unique'],
+        // ];
+
         return [
-            [['user_id'], 'required'],
-            [['user_id', 'created_at', 'updated_at'], 'integer'],
-            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
-            [['user_id'], 'unique'],
+            [['email'], 'required'],
+            [['email'], 'email'],
+            [['email'], 'unique'],
+            [['created_at', 'updated_at'], 'integer'],
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels()
-    {
-        return [
-            'id' => 'ID',
-            'user_id' => 'User ID',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
-        ];
-    }
-
-    /**
-     * Gets query for [[User]].
-     *
-     * @return \yii\db\ActiveQuery|\app\models\query\UserQuery
-     */
-    public function getUser()
-    {
-        return $this->hasOne(User::class, ['id' => 'user_id']);
-    }
+    // /**
+    //  * Gets query for [[User]].
+    //  *
+    //  * @return \yii\db\ActiveQuery|\app\models\query\UserQuery
+    //  */
+    // public function getUser()
+    // {
+    //     return $this->hasOne(User::class, ['id' => 'user_id']);
+    // }
 
     /**
      * {@inheritdoc}

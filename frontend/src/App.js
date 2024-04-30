@@ -19,8 +19,11 @@ import Contact from "./Pages/Contact";
 import { paths } from "./config/paths";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
+import BlogCreate from "./Pages/BlogCreate";
+import AuthorizedRoute from "./Layouts/AuthorizedRoute";
 import NonAuthorizedUserRoute from "./Layouts/NonAuthorizedUserRoute";
 import { AuthProvider } from "./context/AuthProvider";
+import { MarkdownProvider } from "./context/MarkdownProvider";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -33,51 +36,58 @@ const router = createBrowserRouter(
                 </IndexLayout>
             }
         >
+            <Route index element={<Index />} />
             <Route
-                errorElement={
-                    <IndexLayout>
-                        <ErrorPage />
-                    </IndexLayout>
+                path={
+                    paths.about.innerLinks.find(
+                        (innerLink) => innerLink.url === "/about"
+                    ).url
                 }
-            >
-                <Route index element={<Index />} />
+                element={<About />}
+            />
+            <Route
+                path={
+                    paths.about.innerLinks.find(
+                        (innerLink) => innerLink.url === "/team"
+                    ).url
+                }
+                element={<Team />}
+            />
+            <Route
+                path={
+                    paths.about.innerLinks.find(
+                        (innerLink) => innerLink.url === "/testimonials"
+                    ).url
+                }
+                element={<Testimonials />}
+            />
+            <Route path={paths.services.url} element={<Services />} />
+            <Route path={paths.portfolio.url} element={<Portfolio />} />
+            <Route path={paths.pricing.url} element={<Pricing />} />
+            <Route path={paths.blog.url} element={<BlogIndex />} />
+            <Route path={paths.blog.url + "/:id"} element={<BlogSingle />} />
+            <Route element={<AuthorizedRoute withAdminPrivileges />}>
                 <Route
-                    path={
-                        paths.about.innerLinks.find(
-                            (innerLink) => innerLink.url === "/about"
-                        ).url
+                    path={paths.blog.url + "/create"}
+                    element={
+                        <MarkdownProvider>
+                            <BlogCreate />
+                        </MarkdownProvider>
                     }
-                    element={<About />}
                 />
                 <Route
-                    path={
-                        paths.about.innerLinks.find(
-                            (innerLink) => innerLink.url === "/team"
-                        ).url
+                    path={paths.blog.url + "/edit/:id"}
+                    element={
+                        <MarkdownProvider>
+                            <BlogCreate isEditing />
+                        </MarkdownProvider>
                     }
-                    element={<Team />}
                 />
-                <Route
-                    path={
-                        paths.about.innerLinks.find(
-                            (innerLink) => innerLink.url === "/testimonials"
-                        ).url
-                    }
-                    element={<Testimonials />}
-                />
-                <Route path={paths.services.url} element={<Services />} />
-                <Route path={paths.portfolio.url} element={<Portfolio />} />
-                <Route path={paths.pricing.url} element={<Pricing />} />
-                <Route path={paths.blog.url} element={<BlogIndex />} />
-                <Route
-                    path={paths.blog.url + "/:id"}
-                    element={<BlogSingle />}
-                />
-                <Route path={paths.contact.url} element={<Contact />} />
-                <Route element={<NonAuthorizedUserRoute />}>
-                    <Route path={paths.login.url} element={<Login />} />
-                    <Route path={paths.signup.url} element={<Signup />} />
-                </Route>
+            </Route>
+            <Route path={paths.contact.url} element={<Contact />} />
+            <Route element={<NonAuthorizedUserRoute />}>
+                <Route path={paths.login.url} element={<Login />} />
+                <Route path={paths.signup.url} element={<Signup />} />
             </Route>
         </Route>
     )

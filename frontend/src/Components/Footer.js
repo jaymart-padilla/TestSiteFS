@@ -12,7 +12,7 @@ import { paths } from "../config/paths";
 import { parseErrorMessage } from "../utils/errorParser";
 import axios from "axios";
 import { useState } from "react";
-import { useAuthContext } from "../context/AuthProvider";
+import { useForm } from "@inertiajs/react";
 
 const footerLinks = {
     usefulLinks: [
@@ -184,20 +184,29 @@ export default function Footer() {
 }
 
 function NewsLetter() {
-    const { user, hasNewsletterSubscription } = useAuthContext();
+    // const { user, hasNewsletterSubscription } = useAuthContext();
+    // const { user } = useAuthContext();
+    const { data, setData } = useForm({
+        email: "",
+    });
 
     const [error, setError] = useState();
 
     const submit = async (e) => {
         e.preventDefault();
         try {
-            const apiRoute = hasNewsletterSubscription
-                ? "unsubscribe"
-                : "subscribe";
-            const response = await axios.post(`/api/newsletter/${apiRoute}`, {
-                email: user?.email,
-                accessToken: sessionStorage.getItem("access_token"),
-            });
+            // const apiRoute = hasNewsletterSubscription
+            //     ? "unsubscribe"
+            //     : "subscribe";
+            // const response = await axios.post(`/api/newsletter/${apiRoute}`, {
+            //     email: user?.email,
+            //     accessToken: sessionStorage.getItem("access_token"),
+            // });
+
+            const response = await axios.post(
+                "/api/newsletter/subscribe",
+                data
+            );
 
             setError();
 
@@ -229,26 +238,29 @@ function NewsLetter() {
             <InputGroup>
                 <Form.Control
                     type="email"
-                    placeholder="Please login first to subscribe"
+                    // placeholder="Please login first to subscribe"
+                    placeholder="Enter your email address"
                     required
-                    value={user?.email || ""}
-                    disabled
+                    value={data.email}
+                    onChange={(e) => setData("email", e.target.value)}
                     style={{ fontSize: "small" }}
                 />
                 <div className="input-group-append">
                     <Button
                         type="submit"
-                        variant={`${
-                            hasNewsletterSubscription
-                                ? "outline-success"
-                                : "success"
-                        }`}
+                        // variant={`${
+                        //     hasNewsletterSubscription
+                        //         ? "outline-success"
+                        //         : "success"
+                        // }`}
+                        variant="success"
                         className="px-3"
                         style={{ fontWeight: 500, fontSize: "small" }}
                     >
-                        {hasNewsletterSubscription
+                        {/* {hasNewsletterSubscription
                             ? "Unsubscribe"
-                            : "Subscribe"}
+                            : "Subscribe"} */}
+                        Subscribe
                     </Button>
                 </div>
             </InputGroup>

@@ -16,6 +16,7 @@ class m240412_062944_create_blog_table extends Migration
             'id' => $this->primaryKey(),
             'user_id' => $this->integer()->notNull(),
             'title' => $this->string()->notNull(),
+            'thumbnail' => $this->string()->notNull(),
             'content' => $this->text()->notNull(),
             'created_at' => $this->integer()->notNull(),
             'updated_at' => $this->integer()->notNull(),

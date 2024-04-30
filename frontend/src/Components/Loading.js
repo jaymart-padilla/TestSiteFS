@@ -2,8 +2,11 @@ const img = "/images/loading.svg";
 
 export default function Loading() {
     return (
-        <div className="flex-grow-1 d-flex justify-content-center align-items-center">
-            <h2 className="my-5 mr-4">Loading...</h2>
+        <div
+            className="d-flex justify-content-center align-items-center h-100"
+            style={{ marginTop: "-1.5rem" }}
+        >
+            <h2 className="mr-4">Loading...</h2>
             <img
                 className="d-block"
                 style={{ marginTop: "-0.75rem" }}

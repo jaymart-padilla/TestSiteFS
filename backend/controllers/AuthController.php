@@ -84,12 +84,15 @@ class AuthController extends Controller
         if ($sessionStorageToken === $currentUser->access_token) {
             // Access tokens match, user is authenticated
 
-            // Check if the user is subscribed to the newsletter
-            $hasNewsletterSubscription = NewsletterSubscribers::find()
-                ->where(['user_id' => $currentUser->id])
-                ->exists();
+            // // Check if the user is subscribed to the newsletter
+            // $hasNewsletterSubscription = NewsletterSubscribers::find()
+            //     ->where(['user_id' => $currentUser->id])
+            //     ->exists();
 
-            return $this->asJson(['authenticated' => true, 'user' => $currentUser, 'hasNewsletterSubscription' => $hasNewsletterSubscription]);
+            // return $this->asJson(['authenticated' => true, 'user' => $currentUser, 'hasNewsletterSubscription' =>
+            // $hasNewsletterSubscription]);
+
+            return $this->asJson(['authenticated' => true, 'user' => $currentUser]);
         } else {
             // Access tokens don't match, user is not authenticated
             return $this->asJson(['authenticated' => false]);

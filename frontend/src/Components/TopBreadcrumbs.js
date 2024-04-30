@@ -1,7 +1,7 @@
 import { Breadcrumb, Container, Navbar } from "react-bootstrap";
 
 export default function TopBreadcrumbs({ links, activeLink }) {
-    const maxLetters = 10;
+    const maxLetters = 11;
 
     return (
         <Container fluid className="top-breadcrumbs">

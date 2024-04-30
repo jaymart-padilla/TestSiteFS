@@ -14,18 +14,19 @@ class m240416_013950_create_newsletter_subscribers_table extends Migration
     {
         $this->createTable('{{%newsletter_subscribers}}', [
             'id' => $this->primaryKey(),
-            'user_id' => $this->integer()->notNull(),
+            // 'user_id' => $this->integer()->notNull(),
+            'email' => $this->string()->notNull()->unique(),
             'created_at' => $this->integer()->notNull(),
             'updated_at' => $this->integer()->notNull(),
         ]);
 
-        $this->addForeignKey(
-            'fk-newsletter_subscribers-user_id',
-            '{{%newsletter_subscribers}}',
-            'user_id',
-            '{{%user}}',
-            'id',
-        );
+        // $this->addForeignKey(
+        //     'fk-newsletter_subscribers-user_id',
+        //     '{{%newsletter_subscribers}}',
+        //     'user_id',
+        //     '{{%user}}',
+        //     'id',
+        // );
     }
 
     /**
@@ -33,7 +34,7 @@ class m240416_013950_create_newsletter_subscribers_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropForeignKey('fk-newsletter_subscribers-user_id', '{{%newsletter_subscribers}}');
+        // $this->dropForeignKey('fk-newsletter_subscribers-user_id', '{{%newsletter_subscribers}}');
         $this->dropTable('{{%newsletter_subscribers}}');
     }
 }

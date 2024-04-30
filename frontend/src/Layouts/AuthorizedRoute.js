@@ -5,9 +5,10 @@ import Loading from "../Components/Loading";
 
 export default function AuthorizedRoute({
     // redirect = paths.home.url,
+    withAdminPrivileges = false,
     children,
 }) {
-    const { authenticated, loading } = useAuthContext();
+    const { user, authenticated, loading } = useAuthContext();
 
     if (loading) {
         return <Loading />;
@@ -19,6 +20,11 @@ export default function AuthorizedRoute({
 
     if (!authenticated) {
         return <ErrorPage message="401 Unauthorized" />;
+    }
+
+    // if user is not admin
+    if (withAdminPrivileges && user?.privilege !== "admin") {
+        return <ErrorPage message="403 Forbidden" />;
     }
 
     return children ? children : <Outlet />;
