@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import {
     Button,
@@ -16,47 +16,50 @@ import Loading from "./Loading";
 import { formatDate } from "../utils/formateDate";
 import { parseErrorMessage } from "../utils/errorParser";
 import { paths } from "../config/paths";
+import { useBlogContext } from "../context/BlogProvider";
 
 export default function Blog() {
     const { user } = useAuthContext();
-    const [blogs, setBlogs] = useState([]);
-    const [pagination, setPagination] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // const [blogs, setBlogs] = useState([]);
+    // const [pagination, setPagination] = useState(null);
+    // const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchBlogs = async () => {
-            try {
-                const response = await axios.get(`/api${paths.blog.url}`);
+    // useEffect(() => {
+    //     const fetchBlogs = async () => {
+    //         try {
+    //             const response = await axios.get(`/api${paths.blog.url}`);
 
-                setBlogs(response.data?.blogs);
-                setPagination(response.data?.pagination);
-                setLoading(false);
-            } catch (error) {
-                console.error(error);
-                setLoading(false);
-            }
-        };
-        fetchBlogs();
-    }, []);
+    //             setBlogs(response.data?.blogs);
+    //             setPagination(response.data?.pagination);
+    //             setLoading(false);
+    //         } catch (error) {
+    //             console.error(error);
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchBlogs();
+    // }, []);
 
-    async function handlePageChange(page) {
-        try {
-            setLoading(true);
-            const response = await axios.get(`/api${paths.blog.url}`, {
-                params: { page },
-            });
+    const { blogs, pagination, setParams, loading } = useBlogContext();
 
-            setBlogs(response.data?.blogs);
-            setPagination(response.data?.pagination);
-            setLoading(false);
+    // async function handlePageChange(page) {
+    //     try {
+    //         setLoading(true);
+    //         const response = await axios.get(`/api${paths.blog.url}`, {
+    //             params: { page },
+    //         });
 
-            // scroll to top of the page
-            window.scrollTo(0, 0);
-        } catch (error) {
-            console.error(error);
-            setLoading(false);
-        }
-    }
+    //         setBlogs(response.data?.blogs);
+    //         setPagination(response.data?.pagination);
+    //         setLoading(false);
+
+    //         // scroll to top of the page
+    //         window.scrollTo(0, 0);
+    //     } catch (error) {
+    //         console.error(error);
+    //         setLoading(false);
+    //     }
+    // }
 
     // if (loading) return <Loading />;
 
@@ -81,7 +84,7 @@ export default function Blog() {
                             )}
                             <BlogPagination
                                 {...pagination}
-                                handlePageChange={handlePageChange}
+                                setParams={setParams}
                             />
                         </>
                     )}
@@ -188,6 +191,7 @@ function BlogCard({
     async function handleDelete() {
         try {
             setLoading(true);
+
             await axios.delete(`/api${paths.blog.url}/delete`, {
                 params: { id },
             });
@@ -328,15 +332,14 @@ function BlogPagination({
     current_page: currentPage,
     prev_page: prev,
     next_page: next,
-    total_pages: total,
-    handlePageChange,
+    setParams,
 }) {
     return (
         <Pagination className="blog-pagination">
             <Pagination.Item
-                onClick={() => handlePageChange(prev)}
+                onClick={() => setParams({ page: prev })}
                 disabled={prev == null}
-                key={0}
+                // key={0}
                 activeLabel=""
             >
                 Prev
@@ -347,9 +350,9 @@ function BlogPagination({
             </Pagination.Item>
 
             <Pagination.Item
-                onClick={() => handlePageChange(next)}
+                onClick={() => setParams({ page: next })}
                 disabled={next == null}
-                key={total + 1}
+                // key={total + 1}
                 activeLabel=""
             >
                 Next

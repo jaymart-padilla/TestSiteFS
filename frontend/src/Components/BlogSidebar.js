@@ -1,18 +1,14 @@
+import { useEffect, useState } from "react";
 import { Button, Form, FormControl, InputGroup } from "react-bootstrap";
-import { useAuthContext } from "../context/AuthProvider";
+import { useBlogContext } from "../context/BlogProvider";
 import { formatDate } from "../utils/formateDate";
-import { paths } from "../config/paths";
 import { blogCategories, blogData, blogTags } from "../config/dummy-data";
-import { useForm } from "@inertiajs/react";
+import { paths } from "../config/paths";
 
 export default function BlogSidebar({ user }) {
-    const { data, setData } = useForm({
-        search: "",
-    });
-
     return (
         <section className="py-3 px-4 mt-4 mt-lg-0 blog-sidebar shadow border">
-            <SearchSection setData={setData} />
+            <SearchSection />
             <BlogCreateSection user={user} />
             <CategoriesSection />
             <RecentPostSection />
@@ -76,7 +72,27 @@ export default function BlogSidebar({ user }) {
     );
 }
 
-function SearchSection({ setData }) {
+function SearchSection() {
+    const { params, setParams } = useBlogContext();
+    const [search, setSearch] = useState(params?.search || "");
+
+    function updateSearch(e) {
+        setSearch(e.target.value);
+    }
+
+    // throttle searching
+    useEffect(() => {
+        const SEARCH_THROTTLE_DELAY = 200;
+
+        const timer = setTimeout(() => {
+            setParams({ ...params, search });
+        }, SEARCH_THROTTLE_DELAY);
+
+        return () => clearTimeout(timer);
+
+        // eslint-disable-next-line
+    }, [search]);
+
     return (
         <Form>
             <div className="blog-sidebar-section-title">Search</div>
@@ -85,7 +101,8 @@ function SearchSection({ setData }) {
                     className="border-right-0 blog-sidebar-search-input"
                     aria-label="Search"
                     aria-describedby="basic-addon2"
-                    onChange={(e) => setData("username", e.target.value)}
+                    value={search || ""}
+                    onChange={updateSearch}
                 />
                 <Button
                     variant="success"

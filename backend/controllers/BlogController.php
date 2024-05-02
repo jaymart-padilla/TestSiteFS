@@ -14,9 +14,18 @@ class BlogController extends \yii\web\Controller
     {
         $LIMIT = 4;
 
-        $blogs = Blog::find()
+        // search filter
+        $search = Yii::$app->request->get('search');
+
+        $query = Blog::find()
             ->select(['id', 'user_id', 'title', 'content', 'thumbnail', 'created_at', 'updated_at'])
-            ->orderBy(['created_at' => SORT_DESC])
+            ->orderBy(['created_at' => SORT_DESC]);
+
+        if ($search) {
+            $query->where(['like', 'title', $search]);
+        }
+
+        $blogs = $query
             ->offset(($page - 1) * $LIMIT)
             ->limit($LIMIT)
             ->all();
@@ -35,7 +44,7 @@ class BlogController extends \yii\web\Controller
             ];
         }
 
-        $totalBlogs = Blog::find()->count();
+        $totalBlogs = $query->count();
 
         $totalPages = ceil($totalBlogs / $LIMIT);
 

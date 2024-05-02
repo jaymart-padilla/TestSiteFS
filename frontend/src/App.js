@@ -24,6 +24,7 @@ import AuthorizedRoute from "./Layouts/AuthorizedRoute";
 import NonAuthorizedUserRoute from "./Layouts/NonAuthorizedUserRoute";
 import { AuthProvider } from "./context/AuthProvider";
 import { MarkdownProvider } from "./context/MarkdownProvider";
+import { BlogProvider } from "./context/BlogProvider";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -64,8 +65,22 @@ const router = createBrowserRouter(
             <Route path={paths.services.url} element={<Services />} />
             <Route path={paths.portfolio.url} element={<Portfolio />} />
             <Route path={paths.pricing.url} element={<Pricing />} />
-            <Route path={paths.blog.url} element={<BlogIndex />} />
-            <Route path={paths.blog.url + "/:id"} element={<BlogSingle />} />
+            <Route
+                path={paths.blog.url}
+                element={
+                    <BlogProvider>
+                        <BlogIndex />
+                    </BlogProvider>
+                }
+            />
+            <Route
+                path={paths.blog.url + "/:id"}
+                element={
+                    <BlogProvider>
+                        <BlogSingle />
+                    </BlogProvider>
+                }
+            />
             <Route element={<AuthorizedRoute withAdminPrivileges />}>
                 <Route
                     path={paths.blog.url + "/create"}

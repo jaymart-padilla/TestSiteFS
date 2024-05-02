@@ -10,7 +10,6 @@ import { paths } from "../config/paths";
 import axios from "axios";
 
 export default function BlogCreate({ isEditing = false }) {
-    // eslint-disable-next-line
     const { setMarkdown, setMarkdownTitle } = useMarkdown();
     const currentPath = {
         url: paths.blog.url + "/create",
