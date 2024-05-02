@@ -20,46 +20,8 @@ import { useBlogContext } from "../context/BlogProvider";
 
 export default function Blog() {
     const { user } = useAuthContext();
-    // const [blogs, setBlogs] = useState([]);
-    // const [pagination, setPagination] = useState(null);
-    // const [loading, setLoading] = useState(true);
-
-    // useEffect(() => {
-    //     const fetchBlogs = async () => {
-    //         try {
-    //             const response = await axios.get(`/api${paths.blog.url}`);
-
-    //             setBlogs(response.data?.blogs);
-    //             setPagination(response.data?.pagination);
-    //             setLoading(false);
-    //         } catch (error) {
-    //             console.error(error);
-    //             setLoading(false);
-    //         }
-    //     };
-    //     fetchBlogs();
-    // }, []);
 
     const { blogs, pagination, setParams, loading } = useBlogContext();
-
-    // async function handlePageChange(page) {
-    //     try {
-    //         setLoading(true);
-    //         const response = await axios.get(`/api${paths.blog.url}`, {
-    //             params: { page },
-    //         });
-
-    //         setBlogs(response.data?.blogs);
-    //         setPagination(response.data?.pagination);
-    //         setLoading(false);
-
-    //         // scroll to top of the page
-    //         window.scrollTo(0, 0);
-    //     } catch (error) {
-    //         console.error(error);
-    //         setLoading(false);
-    //     }
-    // }
 
     // if (loading) return <Loading />;
 
