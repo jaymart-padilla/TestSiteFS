@@ -42,7 +42,6 @@ export default function BlogComment({
             setCommentStatus(response.data?.status);
             setLoading(false);
         } catch (error) {
-            console.log(error);
             if (error.response && error.response.data) {
                 const responseData = error.response.data;
                 const errorMessage = parseErrorMessage(responseData);
