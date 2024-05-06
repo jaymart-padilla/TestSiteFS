@@ -1,29 +1,97 @@
-import { Card } from "react-bootstrap";
+import { useState } from "react";
+import axios from "axios";
+import { Button, Card, Modal } from "react-bootstrap";
+import { useAuthContext } from "../context/AuthProvider";
 import { formatDate } from "../utils/formateDate";
+import { parseErrorMessage } from "../utils/errorParser";
 
-export const blogComments = [
-    {
-        id: 1,
-        name: "John Doe",
-        date: new Date(2024, 0, 1),
-        img: "/images/testimonials/img-2.jpg",
-        comment:
-            "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptas unde accusantium impedit recusandae quis corrupti quia velit fugiat adipisci maxime. Ea dicta quo saepe totam.",
-    },
-];
+export default function BlogComment({
+    id,
+    author,
+    status,
+    created_at,
+    img = "/images/testimonials/img-2.jpg",
+    comment,
+}) {
+    const { user } = useAuthContext();
+    const isAdmin = user?.privilege === "admin";
+    const [commentStatus, setCommentStatus] = useState(status);
 
-export default function BlogComment({ name, date, img, comment }) {
-    if (![name, date, img, comment].every(Boolean)) return null;
+    const [show, setShow] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    if (![id, author, created_at, status, img, comment].every(Boolean))
+        return null;
 
     const imgPxSize = 64;
-    const formattedDate = formatDate(date);
+    const formattedCreatedAtDate = formatDate(created_at);
+
+    async function handleStatusChange(id, status) {
+        try {
+            setLoading(true);
+            const response = await axios.put(
+                `/api/blog-comment/update-status/`,
+                { status },
+                {
+                    params: { id },
+                }
+            );
+            console.log(response.data?.message);
+
+            setCommentStatus(response.data?.status);
+            setLoading(false);
+        } catch (error) {
+            console.log(error);
+            if (error.response && error.response.data) {
+                const responseData = error.response.data;
+                const errorMessage = parseErrorMessage(responseData);
+                setError(errorMessage);
+            } else {
+                setError("Network error or unexpected issue");
+            }
+            setLoading(false);
+        }
+    }
+
+    async function handleDelete() {
+        try {
+            setLoading(true);
+
+            await axios.delete(`/api/blog-comment/delete`, {
+                params: { id },
+            });
+
+            setLoading(false);
+            setShow(false);
+
+            window.location.reload();
+        } catch (error) {
+            if (error.response && error.response.data) {
+                const responseData = error.response.data;
+                const errorMessage = parseErrorMessage(responseData);
+                setError(errorMessage);
+            } else {
+                setError("Network error or unexpected issue");
+            }
+
+            setLoading(false);
+            setShow(false);
+        }
+    }
+
+    if (
+        (!isAdmin && commentStatus === "rejected") ||
+        (!isAdmin && commentStatus === "pending")
+    )
+        return null;
 
     return (
         <Card className="border-0 blog-comment-root">
             <Card.Body className="d-flex blog-comment-container">
                 <img
                     src={img}
-                    alt={name}
+                    alt={author}
                     className="d-block normalized-image pt-1"
                     width={imgPxSize}
                     height={imgPxSize}
@@ -34,18 +102,102 @@ export default function BlogComment({ name, date, img, comment }) {
                         minHeight: imgPxSize,
                     }}
                 />
-                <div>
-                    <p className="blog-comment-name">
-                        {name}{" "}
+                {/* <div>
+                    <div className="blog-comment-name">
+                        {author}{" "}
                         <a href="#" className="text-dark">
                             <small>
                                 <i className="fa-solid fa-reply" /> Reply
                             </small>
                         </a>
-                    </p>
-                    <small className="blog-comment-date">{formattedDate}</small>
+                    </div>
+                    <small className="blog-comment-date">
+                        {formattedCreatedAtDate}
+                    </small>
+                    <small className="blog-comment-text">{comment}</small>
+                </div> */}
+                <div className="w-100">
+                    <div className="d-flex justify-content-between align-items-center">
+                        <div className="blog-comment-name">{author}</div>
+                        {isAdmin && (
+                            <div
+                                className="d-flex justify-content-center align-items-start"
+                                style={{ gap: "1rem" }}
+                            >
+                                <a
+                                    href="#"
+                                    className="text-danger"
+                                    onClick={() => setShow(true)}
+                                >
+                                    <small>Delete</small>
+                                </a>
+                                <Modal
+                                    show={show}
+                                    onHide={() => setShow(false)}
+                                    centered
+                                >
+                                    <Modal.Header>
+                                        <Modal.Title>
+                                            Delete Comment
+                                        </Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        Are you sure you want to delete this
+                                        comment?
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <Button
+                                            variant="secondary"
+                                            className="accent-button"
+                                            onClick={() => setShow(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            variant="danger"
+                                            className="accent-button"
+                                            disabled={loading}
+                                            onClick={handleDelete}
+                                        >
+                                            Confirm Delete
+                                        </Button>
+                                    </Modal.Footer>
+                                </Modal>
+
+                                <select
+                                    className={`custom-select custom-select-sm ${
+                                        commentStatus === "pending"
+                                            ? "border-warning"
+                                            : commentStatus === "rejected"
+                                            ? "border-danger"
+                                            : "border-success"
+                                    }`}
+                                    style={{
+                                        borderWidth: "2px",
+                                    }}
+                                    disabled={loading}
+                                    defaultValue={commentStatus}
+                                    onChange={(e) => {
+                                        handleStatusChange(id, e.target.value);
+                                    }}
+                                >
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                        )}
+                    </div>
+                    <small className="blog-comment-date">
+                        {formattedCreatedAtDate}
+                    </small>
                     <small className="blog-comment-text">{comment}</small>
                 </div>
+                {error && (
+                    <small className="d-block text-center pt-3 text-danger">
+                        {error}
+                    </small>
+                )}
             </Card.Body>
             <style jsx global>
                 {`
@@ -78,6 +230,10 @@ export default function BlogComment({ name, date, img, comment }) {
                     .blog-comment-text {
                         color: #333;
                         font-size: 0.8rem;
+                    }
+
+                    .custom-select-sm {
+                        font-size: 0.75rem;
                     }
                 `}
             </style>

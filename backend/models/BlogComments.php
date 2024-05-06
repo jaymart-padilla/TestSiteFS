@@ -45,10 +45,11 @@ class BlogComments extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['blog_id', 'user_id', 'content', 'created_at', 'updated_at'], 'required'],
+            [['blog_id', 'user_id', 'content'], 'required'],
             [['blog_id', 'user_id', 'created_at', 'updated_at'], 'integer'],
             [['content'], 'string'],
-            [['status'], 'string', 'max' => 255],
+            [['status'], 'default', 'value' => 'pending'],
+            [['status'], 'in', 'range' => ['pending', 'approved', 'rejected']],
             [['blog_id'], 'exist', 'skipOnError' => true, 'targetClass' => Blog::class, 'targetAttribute' => ['blog_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
         ];

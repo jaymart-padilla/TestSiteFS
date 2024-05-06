@@ -33,6 +33,21 @@ class BlogController extends \yii\web\Controller
         $normalizedBlogs = [];
 
         foreach ($blogs as $blog) {
+            $comments = $blog->getBlogComments()->all();
+
+            $normalizedComments = [];
+
+            foreach ($comments as $comment) {
+                $normalizedComments[] = [
+                    'id' => $comment->id,
+                    'author' => User::findOne($comment->user_id)->username,
+                    'comment' => $comment->content,
+                    'status' => $comment->status,
+                    'created_at' => Yii::$app->formatter->asDatetime($comment->created_at),
+                    'updated_at' => Yii::$app->formatter->asDatetime($comment->updated_at),
+                ];
+            }
+
             $normalizedBlogs[] = [
                 'id' => $blog->id,
                 'author' => User::findOne($blog->user_id)->username,
@@ -41,6 +56,7 @@ class BlogController extends \yii\web\Controller
                 'thumbnail' => $blog->thumbnail,
                 'created_at' => Yii::$app->formatter->asDatetime($blog->created_at),
                 'updated_at' => Yii::$app->formatter->asDatetime($blog->updated_at),
+                'comments' => $normalizedComments,
             ];
         }
 
@@ -61,7 +77,6 @@ class BlogController extends \yii\web\Controller
         ]);
     }
 
-
     public function actionView($id)
     {
         $model = Blog::findOne($id);
@@ -69,6 +84,22 @@ class BlogController extends \yii\web\Controller
         if ($model === null) {
             throw new BadRequestHttpException('Blog not found');
         }
+
+        $comments = $model->getBlogComments()->all();
+
+        $normalizedComments = [];
+
+        foreach ($comments as $comment) {
+            $normalizedComments[] = [
+                'id' => $comment->id,
+                'author' => User::findOne($comment->user_id)->username,
+                'comment' => $comment->content,
+                'status' => $comment->status,
+                'created_at' => Yii::$app->formatter->asDatetime($comment->created_at),
+                'updated_at' => Yii::$app->formatter->asDatetime($comment->updated_at),
+            ];
+        }
+
 
         return $this->asJson([
             'id' => $model->id,
@@ -78,6 +109,7 @@ class BlogController extends \yii\web\Controller
             'thumbnail' => $model->thumbnail,
             'created_at' => Yii::$app->formatter->asDatetime($model->created_at),
             'updated_at' => Yii::$app->formatter->asDatetime($model->updated_at),
+            'comments' => $normalizedComments,
         ]);
     }
 

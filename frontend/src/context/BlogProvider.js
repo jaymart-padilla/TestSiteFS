@@ -13,8 +13,6 @@ export const BlogProvider = ({ children }) => {
     });
     const [loading, setLoading] = useState(true);
 
-    console.log(params);
-
     useEffect(() => {
         const fetchBlogs = async () => {
             try {

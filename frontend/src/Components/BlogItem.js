@@ -1,13 +1,20 @@
+import { useForm } from "@inertiajs/react";
+import { useState } from "react";
+import axios from "axios";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import BlogMarkdownLayout from "../Layouts/BlogMarkdownLayout";
 import BlogSidebar from "./BlogSidebar";
 import BlogComment from "./BlogComment";
-import { formatDate } from "../utils/formateDate";
-import { blogComment } from "../config/dummy-data";
 import Loading from "./Loading";
 import ErrorPage from "../Pages/ErrorPage";
+import { formatDate } from "../utils/formateDate";
+import { parseErrorMessage } from "../utils/errorParser";
+import { useAuthContext } from "../context/AuthProvider";
 
 export default function BlogItem({ blog, loading }) {
+    const { user } = useAuthContext();
+    const isAdmin = user?.privilege === "admin";
+
     return (
         <Container className="py-3 py-lg-5 blog-container">
             <Row>
@@ -18,10 +25,13 @@ export default function BlogItem({ blog, loading }) {
                         <ErrorPage message="404 Not Found" />
                     ) : (
                         <>
-                            <BlogCard {...blog} />
+                            <BlogCard {...blog} isAdmin={isAdmin} />
                             <ProfileCard />
-                            <BlogComments />
-                            <BlogLeaveReplyForm />
+                            <BlogComments
+                                comments={blog?.comments}
+                                isAdmin={isAdmin}
+                            />
+                            <BlogLeaveReplyForm blogId={blog?.id} />
                         </>
                     )}
                 </Col>
@@ -116,6 +126,7 @@ function BlogCard({
     comments,
     thumbnail,
     content,
+    isAdmin,
     tags = [],
 }) {
     const dateCreated = formatDate(created_at);
@@ -146,7 +157,12 @@ function BlogCard({
                     </small>
                     <small>
                         <i className="fa-regular fa-comment-dots mr-2" />
-                        {comments || 0} comments
+                        {(comments && isAdmin
+                            ? comments.length
+                            : comments.filter(
+                                  (comment) => comment?.status === "approved"
+                              ).length) || 0}{" "}
+                        comments
                     </small>
                 </Card.Text>
                 <BlogMarkdownLayout className="blog-item-card-content">
@@ -208,14 +224,27 @@ function ProfileCard() {
     );
 }
 
-function BlogComments() {
+function BlogComments({ isAdmin, comments = [] }) {
     //
     // will be handled differently on full stack (each reply to a comment will add a dynamic insertion // adding a padding to its left)
     //
+    if (!comments && comments.length < 1) return null;
+
     return (
         <div className="overflow-auto">
-            <h5 className="blog-item-comment">8 Comments</h5>
-            <div>
+            <h5 className="blog-item-comment">
+                {isAdmin
+                    ? comments.length
+                    : comments.filter(
+                          (comment) => comment?.status === "approved"
+                      ).length}{" "}
+                Comments
+            </h5>
+            {comments.map((comment, index) => (
+                <BlogComment key={comment?.id || index} {...comment} />
+            ))}
+
+            {/* <div>
                 <BlogComment {...blogComment} />
             </div>
             <div>
@@ -229,20 +258,58 @@ function BlogComments() {
             </div>
             <div>
                 <BlogComment {...blogComment} />
-            </div>
+            </div> */}
         </div>
     );
 }
 
-function BlogLeaveReplyForm() {
+function BlogLeaveReplyForm({ blogId }) {
+    const { data, setData } = useForm({
+        comment: "",
+    });
+
+    const [loading, setLoading] = useState(false);
+
+    const [error, setError] = useState();
+
+    const submit = async (e) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            const response = await axios.post("/api/blog-comment/create", {
+                ...data,
+                blog_id: blogId,
+            });
+
+            setError();
+            setLoading(false);
+
+            console.log(response.data);
+
+            window.location.reload();
+        } catch (error) {
+            setLoading(false);
+            if (error.response && error.response.data) {
+                const responseData = error.response.data;
+                const errorMessage = parseErrorMessage(responseData);
+                setError(errorMessage);
+            } else {
+                setError("Network error or unexpected issue");
+            }
+        }
+    };
+
     return (
-        <Form className="p-4 shadow-sm border border-bottom-0 blog-item-leave-reply-form">
+        <Form
+            className="p-4 shadow-sm border border-bottom-0 blog-item-leave-reply-form"
+            onSubmit={submit}
+        >
             <h5 className="font-weight-bold">Leave a Reply</h5>
             <small className="d-block mt-2 mb-3">
-                Your email address will not be published. Required fields are
-                marked <span className="text-danger">*</span>
+                Please be polite when writing your comment. All comments will be
+                moderated.
             </small>
-            <Row>
+            {/* <Row>
                 <Form.Group as={Col} controlId="name" className="mb-3">
                     <Form.Control
                         placeholder="Your Name*"
@@ -262,22 +329,30 @@ function BlogLeaveReplyForm() {
                     placeholder="Your Website"
                     className="blog-item-leave-reply-form-input"
                 />
-            </Form.Group>
+            </Form.Group> */}
             <Form.Group controlId="message" className="mb-3">
                 <Form.Control
                     as="textarea"
-                    placeholder="Your Comment*"
+                    placeholder="Your Comment"
                     rows={3}
                     className="blog-item-leave-reply-form-input"
+                    value={data.comment}
+                    onChange={(e) => setData("comment", e.target.value)}
                 />
             </Form.Group>
             <Button
                 className="d-block accent-button"
                 variant="dark"
+                disabled={loading}
                 type="submit"
             >
                 Send Message
             </Button>
+            {error && (
+                <small className="d-block text-left pt-3 text-danger">
+                    {error}
+                </small>
+            )}
         </Form>
     );
 }

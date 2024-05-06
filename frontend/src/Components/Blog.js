@@ -34,20 +34,22 @@ export default function Blog() {
                     ) : (
                         <>
                             {blogs && blogs.length > 0 ? (
-                                blogs.map((blog, index) => (
-                                    <BlogCard
-                                        user={user}
-                                        {...blog}
-                                        key={blog.id || index}
+                                <>
+                                    {blogs.map((blog, index) => (
+                                        <BlogCard
+                                            user={user}
+                                            {...blog}
+                                            key={blog.id || index}
+                                        />
+                                    ))}
+                                    <BlogPagination
+                                        {...pagination}
+                                        setParams={setParams}
                                     />
-                                ))
+                                </>
                             ) : (
                                 <p className="lead">No blogs found</p>
                             )}
-                            <BlogPagination
-                                {...pagination}
-                                setParams={setParams}
-                            />
                         </>
                     )}
                 </Col>
@@ -136,6 +138,8 @@ function BlogCard({
     thumbnail,
     content,
 }) {
+    const isAdmin = user?.privilege === "admin";
+
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -199,7 +203,12 @@ function BlogCard({
                     </small>
                     <small>
                         <i className="fa-regular fa-comment-dots mr-2" />
-                        {comments || 0} comments
+                        {(comments && isAdmin
+                            ? comments.length
+                            : comments.filter(
+                                  (comment) => comment?.status === "approved"
+                              ).length) || 0}{" "}
+                        comments
                     </small>
                 </Card.Text>
                 <BlogMarkdownLayout
@@ -263,6 +272,7 @@ function BlogCard({
                                     </Button>
                                 </Modal.Footer>
                             </Modal>
+
                             <Button
                                 href={`${paths.blog.url}/edit/${id}`}
                                 variant="warning"
