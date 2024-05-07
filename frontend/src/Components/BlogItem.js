@@ -1,19 +1,28 @@
-import { useForm } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { useForm } from "@inertiajs/react";
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import BlogMarkdownLayout from "../Layouts/BlogMarkdownLayout";
+import { useAuthContext } from "../context/AuthProvider";
 import BlogSidebar from "./BlogSidebar";
 import BlogComment from "./BlogComment";
 import Loading from "./Loading";
 import ErrorPage from "../Pages/ErrorPage";
 import { formatDate } from "../utils/formateDate";
 import { parseErrorMessage } from "../utils/errorParser";
-import { useAuthContext } from "../context/AuthProvider";
+import { paths } from "../config/paths";
 
 export default function BlogItem({ blog, loading }) {
     const { user } = useAuthContext();
+
+    const [comments, setComments] = useState(blog?.comments || []);
     const isAdmin = user?.privilege === "admin";
+
+    useEffect(() => {
+        if (blog) {
+            setComments(blog?.comments || []);
+        }
+    }, [blog]);
 
     return (
         <Container className="py-3 py-lg-5 blog-container">
@@ -28,7 +37,9 @@ export default function BlogItem({ blog, loading }) {
                             <BlogCard {...blog} isAdmin={isAdmin} />
                             <ProfileCard />
                             <BlogComments
-                                comments={blog?.comments}
+                                blogId={blog?.id}
+                                comments={comments}
+                                setComments={setComments}
                                 isAdmin={isAdmin}
                             />
                             <BlogLeaveReplyForm blogId={blog?.id} />
@@ -36,7 +47,7 @@ export default function BlogItem({ blog, loading }) {
                     )}
                 </Col>
                 <Col xs={{ span: 12 }} lg={{ span: 4 }}>
-                    <BlogSidebar />
+                    <BlogSidebar user={user} />
                 </Col>
             </Row>
             <style jsx global>
@@ -111,6 +122,10 @@ export default function BlogItem({ blog, loading }) {
 
                     .blog-item-leave-reply-form-input {
                         font-size: small;
+                    }
+
+                    .custom-select-sm {
+                        font-size: 0.75rem;
                     }
                 `}
             </style>
@@ -224,25 +239,72 @@ function ProfileCard() {
     );
 }
 
-function BlogComments({ isAdmin, comments = [] }) {
+function BlogComments({ blogId, isAdmin, comments, setComments }) {
+    const [loading, setLoading] = useState(false);
     //
     // will be handled differently on full stack (each reply to a comment will add a dynamic insertion // adding a padding to its left)
     //
     if (!comments && comments.length < 1) return null;
 
+    async function handleFilterChange(id, status) {
+        try {
+            setLoading(true);
+
+            const response = await axios.get(`/api/${paths.blog.url}/view/`, {
+                params: { id, status },
+            });
+
+            setLoading(false);
+
+            setComments(response.data?.comments || []);
+        } catch (error) {
+            console.error(error);
+            setLoading(false);
+        }
+    }
+
     return (
         <div className="overflow-auto">
-            <h5 className="blog-item-comment">
-                {isAdmin
-                    ? comments.length
-                    : comments.filter(
-                          (comment) => comment?.status === "approved"
-                      ).length}{" "}
-                Comments
-            </h5>
-            {comments.map((comment, index) => (
+            <div className="d-flex justify-content-between align-items-center">
+                <h5 className="blog-item-comment">
+                    {isAdmin
+                        ? comments.length
+                        : comments.filter(
+                              (comment) => comment?.status === "approved"
+                          ).length}{" "}
+                    Comments
+                </h5>
+                {isAdmin && (
+                    <div>
+                        <select
+                            className={`custom-select custom-select-sm`}
+                            style={{
+                                borderWidth: "2px",
+                            }}
+                            defaultValue="all"
+                            disabled={loading}
+                            onChange={(e) => {
+                                handleFilterChange(blogId, e.target.value);
+                            }}
+                        >
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                )}
+            </div>
+            {loading ? (
+                <Loading />
+            ) : (
+                comments.map((comment, index) => (
+                    <BlogComment key={comment?.id || index} {...comment} />
+                ))
+            )}
+            {/* {comments.map((comment, index) => (
                 <BlogComment key={comment?.id || index} {...comment} />
-            ))}
+            ))} */}
 
             {/* <div>
                 <BlogComment {...blogComment} />

@@ -10,13 +10,13 @@ import {
     Row,
 } from "react-bootstrap";
 import { useAuthContext } from "../context/AuthProvider";
-import BlogSidebar from "./BlogSidebar";
+import { useBlogContext } from "../context/BlogProvider";
 import BlogMarkdownLayout from "../Layouts/BlogMarkdownLayout";
+import BlogSidebar from "./BlogSidebar";
 import Loading from "./Loading";
 import { formatDate } from "../utils/formateDate";
 import { parseErrorMessage } from "../utils/errorParser";
 import { paths } from "../config/paths";
-import { useBlogContext } from "../context/BlogProvider";
 
 export default function Blog() {
     const { user } = useAuthContext();

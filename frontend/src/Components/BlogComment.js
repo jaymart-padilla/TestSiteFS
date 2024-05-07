@@ -230,10 +230,6 @@ export default function BlogComment({
                         color: #333;
                         font-size: 0.8rem;
                     }
-
-                    .custom-select-sm {
-                        font-size: 0.75rem;
-                    }
                 `}
             </style>
         </Card>

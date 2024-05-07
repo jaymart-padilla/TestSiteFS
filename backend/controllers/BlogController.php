@@ -14,7 +14,7 @@ class BlogController extends \yii\web\Controller
     {
         $LIMIT = 4;
 
-        // search filter
+        // filters
         $search = Yii::$app->request->get('search');
 
         $query = Blog::find()
@@ -85,7 +85,16 @@ class BlogController extends \yii\web\Controller
             throw new BadRequestHttpException('Blog not found');
         }
 
-        $comments = $model->getBlogComments()->all();
+        // filters
+        $status = Yii::$app->request->get('status');
+
+        if ($status === "approved" || $status === "pending" || $status === "rejected") {
+            $comments = $model->getBlogComments()
+                ->where(['status' => $status])
+                ->all();
+        } else {
+            $comments = $model->getBlogComments()->all();
+        }
 
         $normalizedComments = [];
 
@@ -99,7 +108,6 @@ class BlogController extends \yii\web\Controller
                 'updated_at' => Yii::$app->formatter->asDatetime($comment->updated_at),
             ];
         }
-
 
         return $this->asJson([
             'id' => $model->id,
