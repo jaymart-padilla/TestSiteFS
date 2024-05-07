@@ -19,4 +19,6 @@ cd frontend && npm install && npm run dev
 cd backend && composer install && php yii migrate && php yii fixture/load User && php yii serve
 ```
 
-### 2. Run the frontend port in your browser (default port: `http://localhost:5173/`)
+### 2. Run the frontend port in your browser
+
+-   Default port: `http://localhost:5173/`
