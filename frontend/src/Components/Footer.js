@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useForm } from "@inertiajs/react";
+import axios from "axios";
 import {
     Button,
     Col,
@@ -7,12 +10,10 @@ import {
     Nav,
     Row,
 } from "react-bootstrap";
+import ToastNotif from "./ToastNotif";
 import { socialLinks as socialUrl } from "../config/social-links";
-import { paths } from "../config/paths";
 import { parseErrorMessage } from "../utils/errorParser";
-import axios from "axios";
-import { useState } from "react";
-import { useForm } from "@inertiajs/react";
+import { paths } from "../config/paths";
 
 const footerLinks = {
     usefulLinks: [
@@ -186,10 +187,12 @@ export default function Footer() {
 function NewsLetter() {
     // const { user, hasNewsletterSubscription } = useAuthContext();
     // const { user } = useAuthContext();
-    const { data, setData } = useForm({
+    const { data, setData, reset } = useForm({
         email: "",
     });
 
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState();
     const [error, setError] = useState();
 
     const submit = async (e) => {
@@ -210,9 +213,11 @@ function NewsLetter() {
 
             setError();
 
-            console.log(response.data?.message);
+            reset();
 
-            window.location.reload();
+            setToastMessage(response.data?.message);
+
+            setShowToast(true);
         } catch (error) {
             if (error.response && error.response.data) {
                 const responseData = error.response.data;
@@ -269,6 +274,11 @@ function NewsLetter() {
                     {error}
                 </small>
             )}
+            <ToastNotif
+                show={showToast}
+                message={toastMessage}
+                setShow={setShowToast}
+            />
         </Form>
     );
 }
