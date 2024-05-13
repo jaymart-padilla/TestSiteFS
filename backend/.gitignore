@@ -34,7 +34,3 @@ tests/_support/_generated
 
 #vagrant folder
 /.vagrant
-
-# misc
-/web/md/
-/web/images/thumbnail/
