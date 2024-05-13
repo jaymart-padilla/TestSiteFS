@@ -82,7 +82,7 @@ class NewsletterController extends Controller
         $subscriber->email = $email;
         if ($subscriber->save()) {
             return $this->asJson([
-                'message' => 'You have been subscribed to our newsletter',
+                'message' => 'You have been subscribed to our newsletter!',
             ]);
         } else {
             if ($subscriber->hasErrors()) {
