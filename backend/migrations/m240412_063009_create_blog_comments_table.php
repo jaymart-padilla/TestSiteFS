@@ -28,6 +28,7 @@ class m240412_063009_create_blog_comments_table extends Migration
             'blog_id',
             '{{%blog}}',
             'id',
+            'CASCADE',
         );
 
         $this->addForeignKey(
