@@ -24,6 +24,11 @@ class BlogCommentController extends \yii\web\Controller
         $model->blog_id = $blogId;
         $model->content = $comment;
 
+        // prohibit comment submission if the user is not logged in
+        if (Yii::$app->user->isGuest) {
+            throw new BadRequestHttpException('You must be logged in to submit a comment');
+        }
+
         // if the user is an admin, approve the comment automatically
         if (Yii::$app->user->identity->privilege === 'admin') {
             $model->status = 'approved';
