@@ -102,6 +102,7 @@ class BlogController extends \yii\web\Controller
             $normalizedComments[] = [
                 'id' => $comment->id,
                 'author' => User::findOne($comment->user_id)->username,
+                'author_id' => $comment->user_id,
                 'comment' => $comment->content,
                 'status' => $comment->status,
                 'created_at' => Yii::$app->formatter->asDatetime($comment->created_at),

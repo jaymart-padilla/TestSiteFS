@@ -8,6 +8,7 @@ import { parseErrorMessage } from "../utils/errorParser";
 export default function BlogComment({
     id,
     author,
+    author_id,
     status,
     created_at,
     img = "/images/testimonials/img-2.jpg",
@@ -15,6 +16,7 @@ export default function BlogComment({
 }) {
     const { user } = useAuthContext();
     const isAdmin = user?.privilege === "admin";
+    const isAuthor = user?.id === author_id;
     const [commentStatus, setCommentStatus] = useState(status);
 
     const [show, setShow] = useState(false);
@@ -79,9 +81,10 @@ export default function BlogComment({
         }
     }
 
+    // if comment is pending or rejected and user is not admin or author, don't show the comment
     if (
-        (!isAdmin && commentStatus === "rejected") ||
-        (!isAdmin && commentStatus === "pending")
+        (!isAdmin && !isAuthor && commentStatus === "rejected") ||
+        (!isAdmin && !isAuthor && commentStatus === "pending")
     )
         return null;
 
@@ -118,51 +121,74 @@ export default function BlogComment({
                 <div className="w-100">
                     <div className="d-flex justify-content-between align-items-center">
                         <div className="blog-comment-name">{author}</div>
-                        {isAdmin && (
-                            <div
-                                className="d-flex justify-content-center align-items-start"
-                                style={{ gap: "1rem" }}
-                            >
-                                <a
-                                    href="#"
-                                    className="text-danger"
-                                    onClick={() => setShow(true)}
-                                >
-                                    <small>Delete</small>
-                                </a>
-                                <Modal
-                                    show={show}
-                                    onHide={() => setShow(false)}
-                                    centered
-                                >
-                                    <Modal.Header>
-                                        <Modal.Title>
-                                            Delete Comment
-                                        </Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body>
-                                        Are you sure you want to delete this
-                                        comment?
-                                    </Modal.Body>
-                                    <Modal.Footer>
-                                        <Button
-                                            variant="secondary"
-                                            className="accent-button"
-                                            onClick={() => setShow(false)}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            variant="danger"
-                                            className="accent-button"
-                                            disabled={loading}
-                                            onClick={handleDelete}
-                                        >
-                                            Confirm Delete
-                                        </Button>
-                                    </Modal.Footer>
-                                </Modal>
+                        <div
+                            className="d-flex justify-content-center align-items-center"
+                            style={{ gap: "1rem" }}
+                        >
+                            {/* only the author and the admin can delete the comment */}
+                            {(isAdmin || isAuthor) && (
+                                <>
+                                    <small
+                                        className="text-danger"
+                                        style={{
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={() => setShow(true)}
+                                    >
+                                        Delete
+                                    </small>
 
+                                    <Modal
+                                        show={show}
+                                        onHide={() => setShow(false)}
+                                        centered
+                                    >
+                                        <Modal.Header>
+                                            <Modal.Title>
+                                                Delete Comment
+                                            </Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body>
+                                            Are you sure you want to delete this
+                                            comment?
+                                        </Modal.Body>
+                                        <Modal.Footer>
+                                            <Button
+                                                variant="secondary"
+                                                className="accent-button"
+                                                onClick={() => setShow(false)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                className="accent-button"
+                                                disabled={loading}
+                                                onClick={handleDelete}
+                                            >
+                                                Confirm Delete
+                                            </Button>
+                                        </Modal.Footer>
+                                    </Modal>
+                                </>
+                            )}
+
+                            {/* show comment status to the comment author */}
+                            {!isAdmin && isAuthor && status !== "approved" && (
+                                <small
+                                    className={`text-capitalize ${
+                                        status === "pending"
+                                            ? "text-warning"
+                                            : "text-danger"
+                                    }`}
+                                    style={{ fontWeight: 500 }}
+                                >
+                                    {status}
+                                </small>
+                            )}
+
+                            {/* only the admin can change the comment status */}
+                            {isAdmin && (
                                 <select
                                     className={`custom-select custom-select-sm ${
                                         commentStatus === "pending"
@@ -184,8 +210,8 @@ export default function BlogComment({
                                     <option value="approved">Approved</option>
                                     <option value="rejected">Rejected</option>
                                 </select>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                     <small className="blog-comment-date">
                         {formattedCreatedAtDate}

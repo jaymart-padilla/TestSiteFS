@@ -55,6 +55,11 @@ class BlogCommentController extends \yii\web\Controller
         $model = BlogComments::findOne($id);
         $model->status = $status;
 
+        // Check if the user is the admin
+        if (Yii::$app->user->identity->privilege !== 'admin') {
+            throw new BadRequestHttpException('You are not allowed to update comment status');
+        }
+
         if ($model->save()) {
             return $this->asJson([
                 'status' => $model->status,
@@ -73,8 +78,8 @@ class BlogCommentController extends \yii\web\Controller
     {
         $model = BlogComments::findOne($id);
 
-        // Check if the user is the admin 
-        if (Yii::$app->user->identity->privilege !== 'admin') {
+        // Check if the user is the admin or the author of the comment
+        if (Yii::$app->user->identity->privilege !== 'admin' && $model->user_id !== Yii::$app->user->id) {
             throw new BadRequestHttpException('You are not allowed to delete this blog');
         }
 
